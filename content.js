@@ -21,9 +21,11 @@ const OUTLINE_CLASS = "pam-ad-outline";
 const OUTLINE_SELECTOR = `.${OUTLINE_CLASS}`;
 
 function isAdPin(pinEl) {
+  // Only Pinterest's own footer label counts. Matching the pin's whole text
+  // would flag any pin whose title or description mentions an ad keyword.
   const footer = pinEl.querySelector('[data-test-id="pinrep-footer"]');
-  const text = (footer ? footer.textContent : pinEl.textContent) || "";
-  const lower = text.toLowerCase();
+  if (!footer) return false;
+  const lower = (footer.textContent || "").toLowerCase();
   return AD_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
