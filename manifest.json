@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Pinterest Ad Marker",
+  "version": "1.0.0",
+  "description": "Outlines promoted/sponsored pins on Pinterest with a red border so they're instantly recognizable.",
+  "icons": {
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.pinterest.com/*"],
+      "js": ["content.js"],
+      "css": ["style.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
