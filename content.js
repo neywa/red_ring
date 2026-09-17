@@ -1,5 +1,5 @@
 /**
- * Pinterest Ad Marker
+ * Red Ring - Pinterest Ad Marker
  *
  * Pinterest's feed is a virtualized masonry grid: DOM nodes get RECYCLED
  * and repopulated with different pin content as you scroll (this isn't a

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-"Pinterest Ad Marker" — a Chrome Manifest V3 extension that outlines promoted/sponsored pins on pinterest.com with a red border and an "AD" chip.
+"Red Ring - Pinterest Ad Marker" — a Chrome Manifest V3 extension that outlines promoted/sponsored pins on pinterest.com with a red border and an "AD" chip.
 
 ## Build / test / run
 
