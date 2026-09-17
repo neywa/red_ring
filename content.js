@@ -8,11 +8,17 @@
  * ad, then a moment later hold a regular pin. So instead of a one-time
  * scan, we re-evaluate every visible pin on each mutation batch and
  * toggle the outline class on/off to match its CURRENT content.
+ *
+ * The outline sits on the ancestor grid tile, not the pin, and a tile can
+ * outlive the pin that caused it to be marked. Such a tile is reachable
+ * from no pin, so each pass also sweeps already-marked tiles — otherwise a
+ * stale outline would sit on an empty tile until something remounted there.
  */
 
 const AD_KEYWORDS = ["sponsored", "promoted"];
 const PIN_SELECTOR = '[data-test-id="pin"]';
 const OUTLINE_CLASS = "pam-ad-outline";
+const OUTLINE_SELECTOR = `.${OUTLINE_CLASS}`;
 
 function isAdPin(pinEl) {
   const footer = pinEl.querySelector('[data-test-id="pinrep-footer"]');
@@ -27,13 +33,21 @@ function getOutlineTarget(pinEl) {
   return pinEl.closest('[data-grid-item="true"]') || pinEl;
 }
 
-function applyMarking(pinEl) {
-  const target = getOutlineTarget(pinEl);
-  target.classList.toggle(OUTLINE_CLASS, isAdPin(pinEl));
-}
-
 function scanAllPins() {
-  document.querySelectorAll(PIN_SELECTOR).forEach(applyMarking);
+  // Resolve every tile's desired state first, then write once, so no element
+  // is touched twice per pass with conflicting results.
+  const adTargets = new Set();
+  document.querySelectorAll(PIN_SELECTOR).forEach((pinEl) => {
+    if (isAdPin(pinEl)) adTargets.add(getOutlineTarget(pinEl));
+  });
+
+  // A recycled tile can lose its pin entirely, leaving a marked tile that no
+  // pin points at any more — unreachable from the loop above, so sweep it here.
+  document.querySelectorAll(OUTLINE_SELECTOR).forEach((el) => {
+    if (!adTargets.has(el)) el.classList.remove(OUTLINE_CLASS);
+  });
+
+  adTargets.forEach((el) => el.classList.add(OUTLINE_CLASS));
 }
 
 // Debounce so rapid-fire mutations during scroll don't trigger a full

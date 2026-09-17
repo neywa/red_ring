@@ -20,7 +20,8 @@ The entire extension is one content script ([content.js](content.js)) plus a sty
 
 The one non-obvious constraint that shapes all of the code: **Pinterest's feed is a virtualized masonry grid that recycles DOM nodes.** A node holding an ad can be repopulated with a regular pin as the user scrolls. Consequences:
 
-- Marking a node "already processed" and skipping it is wrong. `applyMarking` re-evaluates each pin's *current* content on every pass and both adds and removes the outline to match.
+- Marking a node "already processed" and skipping it is wrong. `scanAllPins` re-evaluates each pin's *current* content on every pass and both adds and removes the outline to match.
+- Because the outline lives on the ancestor tile rather than the pin, a tile can outlive the pin that marked it and become unreachable from any pin. So each pass also sweeps elements already carrying the outline class, not just `PIN_SELECTOR` matches. `scanAllPins` resolves the desired state for all tiles into a Set first and only then writes, so neither pass can undo the other's result.
 - A `MutationObserver` on `document.body` (childList + subtree + characterData) triggers a debounced full re-scan (150ms) rather than reacting to individual mutations.
 
 Ad detection is text-based: look for "sponsored"/"promoted" inside `[data-test-id="pinrep-footer"]`, falling back to the pin's whole text. The outline is applied to the enclosing `[data-grid-item="true"]` tile (not the inner pin) so the border wraps the full visible card.
