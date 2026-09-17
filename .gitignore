@@ -1,2 +1,9 @@
 .claude/
 node_modules/
+
+# Packed builds of this extension. These live in the extension root on
+# purpose (Flatpak Chrome reaches the folder through the document portal),
+# which means Chrome packs them into the loaded extension — harmless, but
+# never commit one: it is a stale copy of the repo the moment content.js
+# changes.
+*.zip
