@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-"Pinterest Ad Marker" — a Chrome Manifest V3 extension that outlines promoted/sponsored pins on pinterest.com with a red border and an "AD" badge.
+"Pinterest Ad Marker" — a Chrome Manifest V3 extension that outlines promoted/sponsored pins on pinterest.com with a red border and an "AD" chip.
 
 ## Build / test / run
 
@@ -28,8 +28,10 @@ The one non-obvious constraint that shapes all of the code: **Pinterest's feed i
 - Because the outline lives on the ancestor tile rather than the pin, a tile can outlive the pin that marked it and become unreachable from any pin. So each pass also sweeps elements already carrying the outline class, not just `PIN_SELECTOR` matches. `scanAllPins` resolves the desired state for all tiles into a Set first and only then writes, so neither pass can undo the other's result.
 - A `MutationObserver` on `document.body` (childList + subtree only) triggers a throttled full re-scan (150ms) rather than reacting to individual mutations. `characterData` is deliberately *not* observed: it put every text node on the page under observation and kept the scan loop running at ~10Hz on an idle feed. The accepted cost is that React patching a footer's text in place is invisible, so a recycled tile can briefly go unmarked until the next structural mutation — this is covered by a test.
 
-Ad detection is text-based: look for "sponsored"/"promoted" inside `[data-test-id="pinrep-footer"]`, and return false if that footer is absent. There is deliberately no fallback to the pin's whole text, which would flag pins whose author-written title or description merely mentions those words. The tradeoff is that detection rests entirely on that one selector: if Pinterest renames it, the extension silently marks nothing rather than degrading. The outline is applied to the enclosing `[data-grid-item="true"]` tile (not the inner pin) so the border wraps the full visible card.
+Ad detection is text-based: look for "sponsored"/"promoted" inside `[data-test-id="pinrep-footer"]`, and return false if that footer is absent. There is deliberately no fallback to the pin's whole text, which would flag pins whose author-written title or description merely mentions those words. The tradeoff is that detection rests entirely on that one selector: if Pinterest renames it, the extension silently marks nothing rather than degrading. The outline is applied to the enclosing `[data-grid-item="true"]` tile (not the inner pin) so the border wraps the full visible card, falling back to the pin element itself when no such tile exists.
 
 The content script only ever toggles a class — it never injects DOM. The "AD" chip is a `::before` pseudo-element on `.pam-ad-outline`. Keep it that way: appending real nodes into Pinterest's React-managed tiles risks `NotFoundError` crashes during reconciliation, and a node whose presence is guarded by a class React can rewrite will duplicate.
+
+`.pam-ad-outline` carries `position: relative` so that pseudo-element anchors to the tile rather than to some distant ancestor — it is load-bearing, not incidental. It is also the one declaration here that can affect Pinterest's layout, since the target is usually a masonry tile Pinterest positions itself. Inline styles win over this rule in the normal case, but if the grid ever collapses into a single flowing column after a Pinterest change, suspect this line first.
 
 Because detection depends on Pinterest's `data-test-id` attributes and label wording, breakage after a Pinterest redesign most likely means those selectors or keywords changed — check them first.
