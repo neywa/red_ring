@@ -1,0 +1,11 @@
+{
+  "name": "pinterest-ad-marker-tests",
+  "private": true,
+  "description": "jsdom tests for the extension's content script. Kept out of the extension root so node_modules is not packed into the unpacked extension.",
+  "scripts": {
+    "test": "node content.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.0"
+  }
+}
