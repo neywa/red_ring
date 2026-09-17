@@ -15,18 +15,40 @@
  * stale outline would sit on an empty tile until something remounted there.
  */
 
-const AD_KEYWORDS = ["sponsored", "promoted"];
+// Pinterest's ad label is its own element reading exactly "Promoted",
+// "Sponsored", or "Promoted by <advertiser>". Anchoring both ends is what keeps
+// the author-written text in the same footer — pin titles, board names — from
+// matching. A label variant with trailing text won't match and the pin goes
+// unmarked: the same deliberate tradeoff made for a renamed selector, marking
+// nothing rather than marking the wrong pins.
+const AD_LABEL_RE = /^(?:promoted|sponsored)(?:\s+by\b.*)?$/i;
 const PIN_SELECTOR = '[data-test-id="pin"]';
 const OUTLINE_CLASS = "pam-ad-outline";
 const OUTLINE_SELECTOR = `.${OUTLINE_CLASS}`;
 
+function normalize(text) {
+  return (text || "").replace(/\s+/g, " ").trim();
+}
+
 function isAdPin(pinEl) {
-  // Only Pinterest's own footer label counts. Matching the pin's whole text
-  // would flag any pin whose title or description mentions an ad keyword.
-  const footer = pinEl.querySelector('[data-test-id="pinrep-footer"]');
+  // Only a footer belonging to THIS pin counts. Pins nest (collection and
+  // carousel ad units), so a plain querySelector reaches into a descendant
+  // pin's footer — and when that nested footer comes first in document order,
+  // it is returned INSTEAD of the pin's own, hiding a real ad label.
+  const footer = Array.from(
+    pinEl.querySelectorAll('[data-test-id="pinrep-footer"]')
+  ).find((f) => f.closest(PIN_SELECTOR) === pinEl);
   if (!footer) return false;
-  const lower = (footer.textContent || "").toLowerCase();
-  return AD_KEYWORDS.some((kw) => lower.includes(kw));
+
+  // Test elements one at a time rather than the footer's aggregate textContent:
+  // that blob splices title, attribution and board name together with no
+  // separator, which both matches author-written text and can form a keyword
+  // across a sibling boundary that appears nowhere on screen. Each element's
+  // full subtree text is used, not its leaf text, so a label split as
+  // <span>Promoted</span><span> by Acme</span> still matches.
+  return [footer, ...footer.querySelectorAll("*")].some((el) =>
+    AD_LABEL_RE.test(normalize(el.textContent))
+  );
 }
 
 function getOutlineTarget(pinEl) {
