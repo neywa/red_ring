@@ -263,6 +263,20 @@ const SETTLE = 250; // > the 150ms throttle window
     check("later childList churn picks up the missed edit", marked(dom, "t"), true);
   }
 
+  {
+    // observe() binds to a NODE, not to "whatever document.body currently is".
+    // Observing body therefore stops working for good the moment body is
+    // replaced — silently, because detection itself is unharmed: a manual scan
+    // still finds the ad, so only the automatic path is dead.
+    const dom = setup(`<div id="host"></div>`);
+    const doc = dom.window.document;
+    const fresh = doc.createElement("body");
+    doc.documentElement.replaceChild(fresh, doc.body);
+    fresh.insertAdjacentHTML("beforeend", tile("late", "Promoted by Acme"));
+    await sleep(SETTLE);
+    check("observer survives document.body being replaced", marked(dom, "late"), true);
+  }
+
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);
 })();

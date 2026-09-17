@@ -85,8 +85,13 @@ function scheduleScan() {
   }, 150);
 }
 
+// Observe the root element, not document.body: observe() binds to the node it
+// is given, so if body is ever replaced the observer keeps watching a detached
+// node and the extension silently stops marking anything. documentElement also
+// removes the need to worry about body being absent. The cost is that <head>
+// churn now wakes the scan too, which the 150ms throttle already bounds.
 const observer = new MutationObserver(scheduleScan);
-observer.observe(document.body, {
+observer.observe(document.documentElement, {
   childList: true,
   subtree: true,
 });
