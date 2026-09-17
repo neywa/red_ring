@@ -67,7 +67,6 @@ const observer = new MutationObserver(scheduleScan);
 observer.observe(document.body, {
   childList: true,
   subtree: true,
-  characterData: true,
 });
 
 // Initial pass in case pins are already rendered when the script loads.
