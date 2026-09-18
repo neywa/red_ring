@@ -27,6 +27,8 @@ Chrome installs this kind of extension from a **folder on your disk**, not from 
 
 > **Important:** you cannot drag a `.zip` onto Chrome's extensions page and have it install. Only the Chrome Web Store or a signed `.crx` works that way. Unzipping first is not an optional step — it *is* the install.
 
+> **The one step everybody gets wrong:** every folder chooser — Windows, macOS and Linux alike — hands back **the folder you are currently inside**, not one you clicked once on the way past. Clicking `red_ring` and pressing Open usually returns its *parent*. Go *into* the folder until `manifest.json` is listed in front of you, and only then confirm. If Chrome answers *"Manifest file is missing or unreadable"* and names a folder like `~`, `Documents` or `Downloads`, this is what happened — nothing is wrong with the download.
+
 Anything called "Chrome" below also applies to Edge, Brave, Opera, Vivaldi and other Chromium browsers; the extensions page is at the same address in each.
 
 ---
@@ -51,7 +53,7 @@ Anything called "Chrome" below also applies to Edge, Brave, Opera, Vivaldi and o
 - Open Chrome and type `chrome://extensions` in the address bar, then Enter.
 - Turn on **Developer mode** (toggle, top right).
 - Click **Load unpacked** (top left).
-- Navigate *into* your `red_ring` folder — the one where you can see `manifest.json` — and click **Select Folder**.
+- **Double-click into** your `red_ring` folder so the dialog lists `manifest.json` in front of you, then click **Select Folder**. Check the address bar at the top of the dialog ends in `\red_ring` before you confirm.
 
 A card reading **Red Ring - Pinterest Ad Marker 1.0.1** appears. Done.
 
@@ -75,7 +77,7 @@ A card reading **Red Ring - Pinterest Ad Marker 1.0.1** appears. Done.
 - Open Chrome, type `chrome://extensions` in the address bar, Enter.
 - Turn on **Developer mode** (toggle, top right).
 - Click **Load unpacked**.
-- In the file chooser, go *into* the `red_ring` folder — you should see `manifest.json` — and click **Select**.
+- In the file chooser, **double-click into** the `red_ring` folder so `manifest.json` is listed in front of you, then click **Select**. (`Cmd+Shift+G` lets you type the full path instead, if you prefer.)
 
 A card reading **Red Ring - Pinterest Ad Marker 1.0.1** appears. Done.
 
@@ -106,7 +108,9 @@ ls ~/red_ring          # or ~/red_ring-main
 
 - Open Chrome, go to `chrome://extensions`.
 - Turn on **Developer mode** (toggle, top right).
-- Click **Load unpacked**, navigate *into* the folder that contains `manifest.json`, and confirm.
+- Click **Load unpacked**.
+- In the chooser, **double-click into `red_ring`** so that the file list in front of you shows `manifest.json`. Only then click **Open**.
+- Fastest way to be sure: press `Ctrl+L` in the chooser, type the full path (e.g. `/home/you/red_ring`), press Enter, check that `manifest.json` is listed, then Open.
 
 A card reading **Red Ring - Pinterest Ad Marker 1.0.1** appears. Done.
 
@@ -182,7 +186,11 @@ If you bump the version, edit `"version"` in `manifest.json` first so the number
 ## Troubleshooting
 
 **"Manifest file is missing or unreadable"**
-You picked the wrong folder — most likely the one *containing* the extension rather than the extension itself. Redo **Load unpacked** and go one level deeper, until the chooser lists `manifest.json`. On Flatpak Chrome this error can also appear after a restart even when nothing changed; see the note in the Linux section.
+Look at the folder Chrome names in the error. If it is `~`, `Documents`, `Downloads`, `coding` or anything else *containing* the extension, you handed Chrome the parent instead of the extension folder — the chooser returns the directory you are inside, not the one you highlighted. Redo **Load unpacked**, go one level deeper so `manifest.json` is listed in front of you, and confirm from there.
+
+A `.zip` sitting in the folder makes no difference either way: Chrome reads `manifest.json` and ignores the rest. (It is worth deleting anyway — it's a stale copy of the extension the moment you edit anything, and Chrome packs it along if you ever publish.)
+
+If the folder Chrome names *is* the right one, and this started happening to a card that previously worked, see the Flatpak note in the Linux section — the sandbox's access grant expires.
 
 **The card is there, but no pin ever gets a ring**
 Hard-reload the Pinterest tab (`Ctrl+Shift+R` / `Cmd+Shift+R`). A tab that was already open when you installed the extension is still running without it.
